@@ -3,4 +3,4 @@ function $_GET(key) {
     return value && value[1];
 }
 //var socketURL="http://localhost:8080";
-var socketURL="http://avalon-gabrielwu84.rhcloud.com:8000";
+var socketURL="https://avalon-gabrielwu84.rhcloud.com:8443";
