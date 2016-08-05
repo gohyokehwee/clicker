@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Hello World</title>
+
+        <script>
+        var fileDisplayArea;
+        	function readTextFile (f) {
+			 var reader = new FileReader();
+			 reader.onload=function(){
+			 	var text = reader.result;
+				sessionStorage.setItem('lessonPlan', text);
+				console.log('oijfwae');
+				window.location="hostgame.html"
+			 }
+			 reader.readAsText(f);
+			}
+        </script>
+    </head>
+    <body>
+    	<input type="file" id="fileInput"/>
+    	<button id="submit">submit</button>
+    	<div id="fileDisplay"></div>
+    	<script>
+    		(function init(){
+    			var submitBtn = document.getElementById("submit")
+    			var fileInput = document.getElementById("fileInput")
+    			fileDisplayArea=document.getElementById("fileDisplay")
+    			submitBtn.onclick=function(){
+    				readTextFile(fileInput.files[0])
+    			}
+    		}())
+
+    	</script>
+    </body>
+</html>

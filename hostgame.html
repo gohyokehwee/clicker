@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *">-->
+        <meta name="format-detection" content="telephone=no">
+        <meta name="msapplication-tap-highlight" content="no">
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1">
+        <link rel="stylesheet" type="text/css" 
+        	href="https://cdnjs.cloudflare.com/ajax/libs/jquery-mobile/1.4.5/jquery.mobile.min.css">
+        <script type="text/javascript" 
+        	src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js">
+        	</script>
+        <script type="text/javascript"
+	        src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mobile/1.4.5/jquery.mobile.min.js">
+	        </script>
+        <!--<script type="text/javascript" 
+        	src="http://localhost:8080/socket.io/socket.io.js">
+        	</script>-->
+        	<script type="text/javascript" src="http://avalon-gabrielwu84.rhcloud.com/socket.io/socket.io.js"></script>
+        <link rel="stylesheet" type="text/css" href="avalon.css">
+        <script type="text/javascript" src="clicker.js"></script>
+        <script type="text/javascript" src="hostsoc.js"></script>
+        <script type="text/javascript" src="hostgame.js"></script>
+        <script> 
+            var socket={};
+            var studentObj={};
+            var ctrlBarObj={};
+            var lessonObj={};
+            var interface={};
+
+            var lessonPlan=sessionStorage.getItem('lessonPlan');
+            lessonPlan=JSON.parse(lessonPlan);
+			function studentViewEngine(){
+			    // mark answered, reset answered, mark highlight 
+			}
+
+            function lessonEngine(qnStemDiv,studAnsDiv,lessonPlan){
+	            var baseJsAdd=
+	            	"https://gabrielwu84.github.io/clicker-mods/";
+	            var qnNo=-1;
+	            var qnObj={};
+	            var answeredUuid;
+	            this.jsFile;
+	            this.jsParams;
+
+	            this.nextQn=function(){
+	                qnNo++;
+	                answeredUuid=[];
+	            	var qnSpec=lessonPlan[qnNo];
+	            	var jsFile=baseJsAdd+qnSpec.type+".js";
+	                execQn(jsFile,qnSpec.params,qnSpec.stem);
+					navBtnLogic();
+	            }
+
+	            this.prevQn=function(){
+	                qnNo--;
+	                answeredUuid=[];
+	            	var qnSpec=lessonPlan[qnNo];
+	            	var jsFile=baseJsAdd+qnSpec.type+".js";
+	                execQn(jsFile,qnSpec.params,qnSpec.stem);
+	                navBtnLogic();
+	            }
+	            this.resetQn=function(){
+	                answeredUuid=[];
+	            	var qnSpec=lessonPlan[qnNo];
+	            	var jsFile=baseJsAdd+qnSpec.type+".js";
+	                execQn(jsFile,qnSpec.params,qnSpec.stem);
+	            }
+
+	            this.processAns=function(studentSocketId,studentAns){
+	                studentUuid=studentObj.socIdToUuid(studentSocketId);
+	                // also, update student icon.
+	                console.log(answeredUuid.indexOf(studentUuid));
+	                if(answeredUuid.indexOf(studentUuid)==-1){
+	                    answeredUuid.push(studentUuid);
+	                    qnObj.procAns(studentUuid,studentAns);
+	                } else {
+	                    console.log(studentUuid+" already answered");
+	                }
+	            }
+
+            	function execQn(jsFile,jsParams,qnStem){
+            		lessonObj.jsFile=jsFile; 
+            		lessonObj.jsParams=jsParams;
+            		qnStemDiv.innerHTML=
+            			"<div class='ui-content'>"+qnStem+"</div>";
+            		studAnsDiv.innerHTML="";
+	                $.getScript(jsFile,function() {
+	                    qnObj=new qnHostEng(qnStemDiv, studAnsDiv,jsParams);
+	                    qnStemDiv.innerHTML+=qnObj.stemDisplay();
+                        $(qnStemDiv).trigger("create");
+	                });
+	                var students=studentObj.getConnectedStudents();
+	                for (var socketId in students){
+	                	socket.relay(socketId,
+	                		{"title":"qnCmd","jsFile":jsFile,"params":jsParams}
+	                	);
+	                }
+            	}
+
+	            function navBtnLogic(){
+	                if(qnNo==lessonPlan.length-1){
+	                	ctrlBarObj.hideNextBtn();
+	                } else {
+	                	ctrlBarObj.showNextBtn();
+	                }
+	                if(qnNo==0){
+	                	ctrlBarObj.hidePrevBtn();
+	                } else {
+	                	ctrlBarObj.showPrevBtn();
+	                }
+	            }
+            }
+        </script>
+    </head>
+    <body>
+    	<div data-role="page" id="home" >
+    		<div data-role="header">
+    			<h1>Connecting</h1>
+    		</div>
+    		<div class="ui-content" role="main">
+    		</div>
+    	</div>
+        <div data-role="page" id="host" >
+            <div data-role="header">
+                <h1 id="hostTitle">Lesson</h1>
+            </div>
+            <div class="ui-content" role="main">
+            	<section style="float:left;border-style:solid;border-width:2px;width:300px">
+                <div id='qnStem' class="ui-content" ></div>
+                <div id='ctrlBar' 
+                	data-role="controlgroup" 
+                	data-type="horizontal" style="padding:1px;">
+                	<button style="width:42px;" 
+                	id="prevBtn" data-icon="arrow-l">prev</button>
+                	<button style="width:42px;" 
+                	id="resetBtn" data-icon="refresh">reset</button>
+                	<button style="width:42px;" 
+                	id="nextBtn" data-icon="arrow-r" data-iconpos="right">next</button>
+                </div>
+                <div id='studentView' class="ui-content" 
+                	style="background-color:#dddddd;margin:20px;padding:2px 2px;border-radius:17px;"></div>
+                </section>
+                <section id='studAns' style="float:left;border-style:solid;border-width:2px;padding:30px;"></section>
+            </div>
+            <div data-role="footer" data-position="fixed" class="host-footer" >
+                <div id="info-bar"></div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            (function init(){
+            	interface=new interfaceHandler(
+            		document.getElementById("hostTitle")
+            		);
+            	studentObj=new studentEngine(
+            		document.getElementById("studentView")
+            		);
+            	ctrlBarObj=new ctrlBarEngine(
+	            	document.getElementById("prevBtn"),
+	            	document.getElementById("resetBtn"),
+	            	document.getElementById("nextBtn")
+            		);
+            	lessonObj=new lessonEngine(
+            		document.getElementById("qnStem"),
+            		document.getElementById("studAns"),
+            		lessonPlan
+            		);
+	            //socketUrl found in avalon.js
+            	socket=new socketHost(socketURL,interface);
+	            lessonObj.nextQn();
+            })();
+        </script>
+    </body>
+</html>
