@@ -1,0 +1,21 @@
+.studentIcon{
+    background-image:url(https://cdnjs.cloudflare.com/ajax/libs/jquery-mobile/1.4.5/images/icons-svg/user-black.svg); 
+    background-repeat: no-repeat;background-size: cover;
+    width:50px; height:50px;
+    border-radius:50%;
+    border-width:2px;
+    border-style: solid;
+    border-color:black;
+    float:left;
+    margin:1px;
+    background-color:white;
+}
+.studentIcon.disconnected{
+    opacity:0.1;
+}
+.studentIcon.highlighted{
+    background-color:#7755ff;
+}
+.studentIcon.unanswered{
+    border-color:white;
+}

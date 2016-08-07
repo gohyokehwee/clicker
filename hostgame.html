@@ -8,109 +8,28 @@
         <link rel="stylesheet" type="text/css" 
         	href="https://cdnjs.cloudflare.com/ajax/libs/jquery-mobile/1.4.5/jquery.mobile.min.css">
         <script type="text/javascript" 
-        	src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js">
-        	</script>
+        	src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
         <script type="text/javascript"
-	        src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mobile/1.4.5/jquery.mobile.min.js">
-	        </script>
+	        src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mobile/1.4.5/jquery.mobile.min.js"></script>
         <!--<script type="text/javascript" 
         	src="http://localhost:8080/socket.io/socket.io.js">
         	</script>-->
-        	<script type="text/javascript" src="https://avalon-gabrielwu84.rhcloud.com/socket.io/socket.io.js"></script>
-        
+        <script type="text/javascript" 
+        	src="https://avalon-gabrielwu84.rhcloud.com/socket.io/socket.io.js"></script>
+        <link rel="stylesheet" type="text/css" href="clicker.css">
         <script type="text/javascript" src="clicker.js"></script>
         <script type="text/javascript" src="hostsoc.js"></script>
         <script type="text/javascript" src="hostgame.js"></script>
         <script> 
             var socket={};
-            var studentObj={};
+            var studentIoObj={};
+            var studentDispObj={};
             var ctrlBarObj={};
             var lessonObj={};
             var interface={};
 
             var lessonPlan=sessionStorage.getItem('lessonPlan');
             lessonPlan=JSON.parse(lessonPlan);
-			function studentViewEngine(){
-			    // mark answered, reset answered, mark highlight 
-			}
-
-            function lessonEngine(qnStemDiv,studAnsDiv,lessonPlan){
-	            var baseJsAdd=
-	            	"https://gabrielwu84.github.io/clicker-mods/";
-	            var qnNo=-1;
-	            var qnObj={};
-	            var answeredUuid;
-	            this.jsFile;
-	            this.jsParams;
-
-	            this.nextQn=function(){
-	                qnNo++;
-	                answeredUuid=[];
-	            	var qnSpec=lessonPlan[qnNo];
-	            	var jsFile=baseJsAdd+qnSpec.type+".js";
-	                execQn(jsFile,qnSpec.params,qnSpec.stem);
-					navBtnLogic();
-	            }
-
-	            this.prevQn=function(){
-	                qnNo--;
-	                answeredUuid=[];
-	            	var qnSpec=lessonPlan[qnNo];
-	            	var jsFile=baseJsAdd+qnSpec.type+".js";
-	                execQn(jsFile,qnSpec.params,qnSpec.stem);
-	                navBtnLogic();
-	            }
-	            this.resetQn=function(){
-	                answeredUuid=[];
-	            	var qnSpec=lessonPlan[qnNo];
-	            	var jsFile=baseJsAdd+qnSpec.type+".js";
-	                execQn(jsFile,qnSpec.params,qnSpec.stem);
-	            }
-
-	            this.processAns=function(studentSocketId,studentAns){
-	                studentUuid=studentObj.socIdToUuid(studentSocketId);
-	                // also, update student icon.
-	                console.log(answeredUuid.indexOf(studentUuid));
-	                if(answeredUuid.indexOf(studentUuid)==-1){
-	                    answeredUuid.push(studentUuid);
-	                    qnObj.procAns(studentUuid,studentAns);
-	                } else {
-	                    console.log(studentUuid+" already answered");
-	                }
-	            }
-
-            	function execQn(jsFile,jsParams,qnStem){
-            		lessonObj.jsFile=jsFile; 
-            		lessonObj.jsParams=jsParams;
-            		qnStemDiv.innerHTML=
-            			"<div class='ui-content'>"+qnStem+"</div>";
-            		studAnsDiv.innerHTML="";
-	                $.getScript(jsFile,function() {
-	                    qnObj=new qnHostEng(qnStemDiv, studAnsDiv,jsParams);
-	                    qnStemDiv.innerHTML+=qnObj.stemDisplay();
-                        $(qnStemDiv).trigger("create");
-	                });
-	                var students=studentObj.getConnectedStudents();
-	                for (var socketId in students){
-	                	socket.relay(socketId,
-	                		{"title":"qnCmd","jsFile":jsFile,"params":jsParams}
-	                	);
-	                }
-            	}
-
-	            function navBtnLogic(){
-	                if(qnNo==lessonPlan.length-1){
-	                	ctrlBarObj.hideNextBtn();
-	                } else {
-	                	ctrlBarObj.showNextBtn();
-	                }
-	                if(qnNo==0){
-	                	ctrlBarObj.hidePrevBtn();
-	                } else {
-	                	ctrlBarObj.showPrevBtn();
-	                }
-	            }
-            }
         </script>
     </head>
     <body>
@@ -152,9 +71,10 @@
             	interface=new interfaceHandler(
             		document.getElementById("hostTitle")
             		);
-            	studentObj=new studentEngine(
-            		document.getElementById("studentView")
-            		);
+            	studentIoObj=new studentIoEngine();
+                studentDispObj=new studentDisplayEngine(
+                    document.getElementById("studentView")
+                    );
             	ctrlBarObj=new ctrlBarEngine(
 	            	document.getElementById("prevBtn"),
 	            	document.getElementById("resetBtn"),
