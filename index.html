@@ -1,25 +1,54 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Hello World</title>
-
+        <title>eClicker Home</title>
+        <meta name="format-detection" content="telephone=no">
+        <meta name="msapplication-tap-highlight" content="no">
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1">
+        <link rel="stylesheet" type="text/css" 
+        	href="https://cdnjs.cloudflare.com/ajax/libs/jquery-mobile/1.4.5/jquery.mobile.min.css">
+        <script type="text/javascript" 
+        	src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script type="text/javascript"
+	        src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mobile/1.4.5/jquery.mobile.min.js"></script>
         <script>
-        var fileDisplayArea;
+            function beginLesson(lessonPlanText){
+                sessionStorage.setItem('lessonPlan', lessonPlanText);
+                window.location="hostgame.html";
+            }
+            var fileDisplayArea;
         	function readTextFile (f) {
 			 var reader = new FileReader();
 			 reader.onload=function(){
-			 	var text = reader.result;
-				sessionStorage.setItem('lessonPlan', text);
-				console.log('oijfwae');
-				window.location="hostgame.html"
+			 	var lessonPlan = reader.result;
+                beginLesson(lessonPlan);
 			 }
 			 reader.readAsText(f);
 			}
+
+            function getParams() {
+                  var prmstr = window.location.search.substr(1);
+                  return prmstr != null && prmstr != "" ? transformToAssocArray(prmstr) : {};
+            }
+
+            function transformToAssocArray( prmstr ) {
+                var params = {};
+                var prmarr = prmstr.split("&");
+                for ( var i = 0; i < prmarr.length; i++) {
+                    var tmparr = prmarr[i].split("=");
+                    params[tmparr[0]] = tmparr[1];
+                }
+                return params;
+            }
         </script>
     </head>
     <body>
-    	<input type="file" id="fileInput"/>
-    	<button id="submit">submit</button>
+    	<h2>eClicker</h2>
+    	<fieldset data-role="controlgroup" data-type="horizontal">
+	    	<input type="file" id="fileInput"/>
+	    	<button id="submit">submit</button>
+    	</fieldset>
+    	<!-- add link to apk -->
     	<div id="fileDisplay"></div>
     	<script>
     		(function init(){
@@ -29,8 +58,21 @@
     			submitBtn.onclick=function(){
     				readTextFile(fileInput.files[0])
     			}
-    		}())
+    		}());
 
+            (function checkForGetLessonPlan(){
+            // get json file from clicker-lesson-plans, ensure not 404. then proceed.
+                var params = getParams();
+                if(params.lesson_plan!=undefined){
+                    lessonPlan=params.lesson_plan;
+                    console.log("Launching "+lessonPlan);
+                    $.get("https://gabrielwu84.github.io/clicker-lesson-plans/"+lessonPlan+".json",function(data){
+                        beginLesson(JSON.stringify(data));
+                    }).fail(function(){
+                        console.log("Error loading "+lessonPlan+". Handle error here.");
+                    })
+                }
+            }());
     	</script>
     </body>
 </html>
