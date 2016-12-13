@@ -7,7 +7,7 @@ function socketHost(socketURL,interface){
     }
 
     socketCore.on('connectType?',function(){ 
-        socketCore.emit('connectType=',{'type':'host'}); 
+        socketCore.emit('connectType=',{'app':'cl','type':'host'}); 
     }); 
     socketCore.on('newGameId=',function(lessonId){
         interface.updateLessonId(lessonId);
