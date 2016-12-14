@@ -1,17 +1,26 @@
 function lessonEngine(qnStemDiv,studAnsDiv,lessonPlan){
     var baseJsAdd=
       "https://gabrielwu84.github.io/clicker-mods/";
-    //var baseJsAdd=
-    //  "http://127.0.0.1/home/proj-clicker/clicker-mods/";
     var qnNo=-1;
     var qnObj={};
     var answeredUuid;
+
+    var studResp=[];
+    
     this.jsFile;
     this.jsParams;
 
+    (function init(){
+        (function setupStudResp(){
+            for(var qn in lessonPlan){
+                studResp.push({});
+            }
+        })();
+    })();
+
     this.nextQn=function(){
         qnNo++;
-        answeredUuid=[];
+        answeredUuid={};// change structure from array to {studentUuid:ans} obj .
         var qnSpec=lessonPlan[qnNo];
         var jsFile=baseJsAdd+qnSpec.type+".js";
         execQn(jsFile,qnSpec.params,qnSpec.stem);
@@ -20,14 +29,14 @@ function lessonEngine(qnStemDiv,studAnsDiv,lessonPlan){
 
     this.prevQn=function(){
         qnNo--;
-        answeredUuid=[];
+        answeredUuid={};
         var qnSpec=lessonPlan[qnNo];
         var jsFile=baseJsAdd+qnSpec.type+".js";
         execQn(jsFile,qnSpec.params,qnSpec.stem);
         navBtnLogic();
     }
     this.resetQn=function(){
-        answeredUuid=[];
+        answeredUuid={};
         var qnSpec=lessonPlan[qnNo];
         var jsFile=baseJsAdd+qnSpec.type+".js";
         execQn(jsFile,qnSpec.params,qnSpec.stem);
@@ -35,8 +44,8 @@ function lessonEngine(qnStemDiv,studAnsDiv,lessonPlan){
 
     this.processAns=function(studentSocketId,studentAns){
         studentUuid=studentIoObj.socIdToUuid(studentSocketId);
-        if(answeredUuid.indexOf(studentUuid)==-1){
-            answeredUuid.push(studentUuid);
+        if(!(studentUuid in answeredUuid)){ // check student has not answered
+            answeredUuid[studentUuid]=studentAns; 
             qnObj.procAns(studentUuid,studentAns);
             studentDispObj.markAnswered(studentUuid);
         } else {
@@ -67,6 +76,7 @@ function lessonEngine(qnStemDiv,studAnsDiv,lessonPlan){
     function navBtnLogic(){
         if(qnNo==lessonPlan.length-1){
             ctrlBarObj.hideNextBtn();
+            // showEndButton()
         } else {
             ctrlBarObj.showNextBtn();
         }
@@ -153,7 +163,7 @@ function ctrlBarEngine(prevBtn,resetBtn,nextBtn){
         nextBtn.onclick=function(){lessonObj.nextQn();};
         resetBtn.onclick=function(){lessonObj.resetQn();};
     })();
-    this.hideNextBtn=function(){
+    this.hideNextBtn=function(){// showEndBtn
         nextBtn.style="visibility:hidden;"
     }
     this.hidePrevBtn=function(){
