@@ -3,8 +3,6 @@ function lessonEngine(qnStemDiv,studAnsDiv,lessonPlan){
       "https://gabrielwu84.github.io/clicker-mods/";
     var qnNo=-1;
     var qnObj={};
-    var answeredUuid;
-
     var studResp=[];
     
     this.jsFile;
@@ -20,7 +18,7 @@ function lessonEngine(qnStemDiv,studAnsDiv,lessonPlan){
 
     this.nextQn=function(){
         qnNo++;
-        answeredUuid={};// change structure from array to {studentUuid:ans} obj .
+        studResp[qnNo]={};
         var qnSpec=lessonPlan[qnNo];
         var jsFile=baseJsAdd+qnSpec.type+".js";
         execQn(jsFile,qnSpec.params,qnSpec.stem);
@@ -29,14 +27,14 @@ function lessonEngine(qnStemDiv,studAnsDiv,lessonPlan){
 
     this.prevQn=function(){
         qnNo--;
-        answeredUuid={};
+        studResp[qnNo]={};
         var qnSpec=lessonPlan[qnNo];
         var jsFile=baseJsAdd+qnSpec.type+".js";
         execQn(jsFile,qnSpec.params,qnSpec.stem);
         navBtnLogic();
     }
     this.resetQn=function(){
-        answeredUuid={};
+        studResp[qnNo]={};
         var qnSpec=lessonPlan[qnNo];
         var jsFile=baseJsAdd+qnSpec.type+".js";
         execQn(jsFile,qnSpec.params,qnSpec.stem);
@@ -44,8 +42,8 @@ function lessonEngine(qnStemDiv,studAnsDiv,lessonPlan){
 
     this.processAns=function(studentSocketId,studentAns){
         studentUuid=studentIoObj.socIdToUuid(studentSocketId);
-        if(!(studentUuid in answeredUuid)){ // check student has not answered
-            answeredUuid[studentUuid]=studentAns; 
+        if(!(studentUuid in studResp[qnNo])){ // check student has not answered
+            studResp[qnNo][studentUuid]=studentAns; 
             qnObj.procAns(studentUuid,studentAns);
             studentDispObj.markAnswered(studentUuid);
         } else {
