@@ -1,6 +1,6 @@
 function lessonEngine(qnStemDiv,studAnsDiv,lessonPlan){
-    var baseJsAdd=
-      "https://gabrielwu84.github.io/clicker-mods/";
+    //var modJsAdd="https://gabrielwu84.github.io/clicker-mods/";
+    var modJsAdd="http://gabrielwu84.dlinkddns.com/home/proj-clicker/clicker-mods/";
     var qnNo=-1;
     var qnObj={};
     var studResp=[];
@@ -18,47 +18,46 @@ function lessonEngine(qnStemDiv,studAnsDiv,lessonPlan){
 
     this.nextQn=function(){
         qnNo++;
-        studResp[qnNo]={};
         var qnSpec=lessonPlan[qnNo];
-        var jsFile=baseJsAdd+qnSpec.type+".js";
-        execQn(jsFile,qnSpec.params,qnSpec.stem);
+        var jsFile=modJsAdd+qnSpec.type+".js";
+        execQn(jsFile,qnSpec.params,qnSpec.stem,studResp[qnNo]);
         navBtnLogic();
     }
 
     this.prevQn=function(){
         qnNo--;
-        studResp[qnNo]={};
         var qnSpec=lessonPlan[qnNo];
-        var jsFile=baseJsAdd+qnSpec.type+".js";
-        execQn(jsFile,qnSpec.params,qnSpec.stem);
+        var jsFile=modJsAdd+qnSpec.type+".js";
+        execQn(jsFile,qnSpec.params,qnSpec.stem,studResp[qnNo]);
         navBtnLogic();
     }
     this.resetQn=function(){
         studResp[qnNo]={};
         var qnSpec=lessonPlan[qnNo];
-        var jsFile=baseJsAdd+qnSpec.type+".js";
-        execQn(jsFile,qnSpec.params,qnSpec.stem);
+        var jsFile=modJsAdd+qnSpec.type+".js";
+        execQn(jsFile,qnSpec.params,qnSpec.stem,studResp[qnNo]);
     }
 
     this.processAns=function(studentSocketId,studentAns){
         studentUuid=studentIoObj.socIdToUuid(studentSocketId);
         if(!(studentUuid in studResp[qnNo])){ // check student has not answered
             studResp[qnNo][studentUuid]=studentAns; 
-            qnObj.procAns(studentUuid,studentAns);
+            qnObj.processAns(studentUuid,studentAns);
             studentDispObj.markAnswered(studentUuid);
         } else {
             console.log(studentUuid+" already answered");
         }
     }
 
-    function execQn(jsFile,jsParams,qnStem){
+    function execQn(jsFile,jsParams,qnStem,currResp){
+        // sets up qnObj from mods
         lessonObj.jsFile=jsFile; 
         lessonObj.jsParams=jsParams;
         qnStemDiv.innerHTML=
             "<div class='ui-content'>"+qnStem+"</div>";
         studAnsDiv.innerHTML="";
         $.getScript(jsFile,function() {
-            qnObj=new qnHostEng(qnStemDiv, studAnsDiv,jsParams);
+            qnObj=new modWebEng(qnStemDiv,studAnsDiv,jsParams,initReadyCallback); 
             qnStemDiv.innerHTML+=qnObj.stemDisplay();
             $(qnStemDiv).trigger("create");
         });
@@ -68,7 +67,17 @@ function lessonEngine(qnStemDiv,studAnsDiv,lessonPlan){
                 {"title":"qnCmd","jsFile":jsFile,"params":jsParams}
             );
         }
-        studentDispObj.resetAnswered();
+        studentDispObj.resetAnswered(currResp);
+
+        // for commands that are sensitive to synchronicity
+        // e.g. processAns called needs qnObj to be initialized and graph to be ready        
+        function initReadyCallback(){
+            // restore state from currResp
+            for (var studentUuid in currResp){
+                qnObj.processAns(studentUuid,currResp[studentUuid]);
+                // socket.relay(studentUuid, {"title":"putAns",currResp[studentUuid]);
+            }
+        }
     }
 
     function navBtnLogic(){
@@ -142,9 +151,12 @@ function studentDisplayEngine(studentListDiv){
 	this.markAnswered=function(uuid){
 		$(studentIcons[uuid]).removeClass("unanswered");
 	}
-	this.resetAnswered=function(){
+	this.resetAnswered=function(currResp){
         for(var uuid in studentIcons){
     		$(studentIcons[uuid]).addClass("unanswered");
+        }
+        for(var studentUuid in currResp){
+            $(studentIcons[uuid]).removeClass("unanswered");
         }
 	}
 	this.markDisconnected=function(uuid){
@@ -176,7 +188,6 @@ function ctrlBarEngine(prevBtn,resetBtn,nextBtn){
 }
 
 function interfaceHandler(titleDiv){
-
     this.windowLocation=function(href){
         window.location=href;
     }
