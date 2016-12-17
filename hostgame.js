@@ -62,20 +62,21 @@ function lessonEngine(qnStemDiv,studAnsDiv,lessonPlan){
             $(qnStemDiv).trigger("create");
         });
         var students=studentIoObj.getConnectedStudents();
+        // socketId and studentUuid is a bit complicated. see if can simplify - use only studentUuid
         for (var socketId in students){
             socket.relay(socketId,
-                {"title":"qnCmd","jsFile":jsFile,"params":jsParams}
+                {"title":"qnCmd","jsFile":jsFile,"params":jsParams,"currAns":currResp[students[socketId]]}
             );
         }
         studentDispObj.resetAnswered(currResp);
 
         // for commands that are sensitive to synchronicity
-        // e.g. processAns called needs qnObj to be initialized and graph to be ready        
+        // e.g. processAns called needs qnObj to be initialized and graph to be ready
+        // any way to remove need for initReadyCallback? Issues with jQuery initialize if this is used.
         function initReadyCallback(){
             // restore state from currResp
             for (var studentUuid in currResp){
                 qnObj.processAns(studentUuid,currResp[studentUuid]);
-                // socket.relay(studentUuid, {"title":"putAns",currResp[studentUuid]);
             }
         }
     }
