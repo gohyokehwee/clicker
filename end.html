@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Lesson Ended</title>
+	</head>
+	<body>
+		<a id="x">download lesson data</a>
+		<script type="text/javascript">
+			var studResp=sessionStorage.getItem('studResp');
+			var lessonPlan=sessionStorage.getItem('lessonPlan');
+		
+			var hiddenElement = document.getElementById('x');
+			hiddenElement.href = 'data:attachment/text,' + encodeURI({"response":studResp,"lesson":lessonPlan});
+			hiddenElement.download = 'LessonData.txt';
+		</script>
+	</body>
+</html>
