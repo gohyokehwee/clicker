@@ -1,6 +1,6 @@
 function lessonEngine(qnStemDiv,studAnsDiv,lessonPlan){
-	//var modJsAdd="https://gabrielwu84.github.io/clicker-mods/";
-	var modJsAdd="http://gabrielwu84.dlinkddns.com/home/proj-clicker/clicker-mods/";
+	var modJsAdd="https://gabrielwu84.github.io/clicker-mods/";
+	//var modJsAdd="http://gabrielwu84.dlinkddns.com/home/proj-clicker/clicker-mods/";
 	var qnNo=-1;
 	var qnObj={};
 	var studResp=[];
